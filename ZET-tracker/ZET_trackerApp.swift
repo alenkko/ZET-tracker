@@ -1,0 +1,20 @@
+//
+//  ZET_trackerApp.swift
+//  ZET-tracker
+//
+//  Created by Alen Jurina on 14.02.2026..
+//
+
+import SwiftUI
+
+@main
+struct ZET_trackerApp: App {
+    init() {
+        _ = WatchConnectivityManager.shared
+    }
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
+}
