@@ -1,1 +1,29 @@
-WatchOS + iOS aplikacija koja dohvaća podatke u GTFS formatu sa ZET stranice, obrađuje ih te šalje na upareni Apple Watch gdje na karti prikazuje stvarne lokacije tramvaja i autobusa u Zagrebu.
+# ZET Tracker 
+
+Real-time tracking of ZET vehicles on iPhone and Apple Watch.
+
+## Features
+
+- Real-time vehicle positions
+- Map view with live updates
+- Apple Watch companion app
+- WatchConnectivity sync
+
+## Tech Stack
+
+- Swift
+- SwiftUI
+- MapKit
+- WatchConnectivity
+- GTFS Realtime
+
+## Screenshots
+
+
+## Data Source
+
+ZET GTFS Realtime feed
+
+## Author
+
+Alen Jurina
