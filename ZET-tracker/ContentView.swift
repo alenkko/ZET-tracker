@@ -85,6 +85,7 @@ struct VehicleListView: View {
                                 .foregroundColor(showBuses ? .red : .gray)
                         }
                     }
+                    .padding(10)
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
