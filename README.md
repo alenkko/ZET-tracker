@@ -1,4 +1,4 @@
-# ZET Tracker 
+# ZET-tracker 
 
 Real-time tracking of ZET vehicles on iPhone and Apple Watch.
 
