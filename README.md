@@ -22,7 +22,7 @@ Real-time tracking of ZET vehicles on iPhone and Apple Watch.
 
 ## Data Source
 
-ZET GTFS Realtime feed
+ZET GTFS Realtime feed - https://www.zet.hr/preuzimanja/odredbe/datoteke-u-gtfs-formatu/669
 
 ## Author
 
