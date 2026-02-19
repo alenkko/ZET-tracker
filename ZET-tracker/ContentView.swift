@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        TabView {
+        TabView {               // Creating two tabs
             VehicleListView()
                 .tabItem {
                     Label("Vozila", systemImage: "list.bullet")
@@ -23,7 +23,7 @@ struct ContentView: View {
     }
 }
 
-struct VehicleListView: View {
+struct VehicleListView: View {                      // Tab for displaying fetched vehicles
     @State private var vehicles: [VehicleData] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
@@ -31,7 +31,7 @@ struct VehicleListView: View {
     @State private var showTrams = true
     @State private var showBuses = true
     
-    private var filteredVehicles: [VehicleData] {
+    private var filteredVehicles: [VehicleData] {           // Filter for trams and buses
         vehicles.filter { vehicle in
             if vehicle.isTram && showTrams { return true }
             if !vehicle.isTram && showBuses { return true }
@@ -88,7 +88,7 @@ struct VehicleListView: View {
                     .padding(10)
                 }
                 
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {               // Refresh button
                     Button {
                         Task { await loadVehicles() }
                     } label: {
@@ -103,7 +103,7 @@ struct VehicleListView: View {
         }
     }
     
-    private func loadVehicles() async {
+    private func loadVehicles() async {     // Fetch vehicles
         isLoading = true
         errorMessage = nil
         
@@ -118,7 +118,7 @@ struct VehicleListView: View {
     }
 }
 
-struct VehicleRow: View {
+struct VehicleRow: View {           // Showing each vehicle data
     let vehicle: VehicleData
     
     var body: some View {
@@ -151,6 +151,7 @@ struct WatchControlView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 30) {
+                Spacer()
                 HStack {
                     Circle()
                         .fill(connectivityManager.isWatchReachable ? Color.green : Color.gray)
@@ -159,18 +160,11 @@ struct WatchControlView: View {
                     Text(connectivityManager.isWatchReachable ? "Watch povezan" : "Watch nije povezan")
                         .foregroundColor(.secondary)
                 }
-                
-                VStack(spacing: 12) {
-                    Text("Šalji na Watch:")
-                        .font(.headline)
-                }
-                Spacer()
-                
                 Image(systemName: "applewatch")
                     .font(.system(size: 80))
                     .foregroundColor(.blue)
                 
-                Button {
+                Button {                // Sending data to watch
                     Task {
                         isSending = true
                         await connectivityManager.sendVehiclesToWatch()
@@ -196,7 +190,7 @@ struct WatchControlView: View {
                 .disabled(isSending)
                 .padding(.horizontal)
                 
-                if let lastSent = lastSentTime {
+                if let lastSent = lastSentTime {            // If lastSentTime exists, show when data was last sent to watch
                     VStack(spacing: 4) {
                         Text("Zadnje poslano:")
                             .font(.caption)

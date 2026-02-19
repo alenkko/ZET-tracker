@@ -6,7 +6,7 @@
 //
 import Foundation
 
-struct VehicleData: Identifiable, Sendable, Codable {
+struct VehicleData: Identifiable, Sendable, Codable {   // Creating a VehicleData struct for storing information about each vehicle
     let id: String
     let entityId: String
     let routeId: String

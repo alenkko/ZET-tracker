@@ -10,7 +10,7 @@ import WatchConnectivity
 import Combine
 
 class WatchDataReceiver: NSObject, ObservableObject {
-    static let shared = WatchDataReceiver()
+    static let shared = WatchDataReceiver()     // Creating a singleton instance
     
     @Published var vehicles: [VehicleData] = []
     @Published var lastUpdateTime: Date?
@@ -21,7 +21,7 @@ class WatchDataReceiver: NSObject, ObservableObject {
         setupSession()
     }
     
-    private func setupSession() {
+    private func setupSession() {                      // Setting up the session
         guard WCSession.isSupported() else {
             print("WatchConnectivity not supported")
             return
@@ -32,7 +32,7 @@ class WatchDataReceiver: NSObject, ObservableObject {
         session.activate()
     }
     
-    func requestVehiclesFromPhone() {
+    func requestVehiclesFromPhone() {                                   // Making a request for fetching vehicles
         guard WCSession.default.activationState == .activated else {
             print("Session not activated")
             return
@@ -45,7 +45,7 @@ class WatchDataReceiver: NSObject, ObservableObject {
         
         print("Sending request to iPhone...")
         
-        WCSession.default.sendMessage(
+        WCSession.default.sendMessage(                  // Sending a message to the iPhone
             ["request": "fetchVehicles"],
             replyHandler: { reply in
                 print("iPhone replied: \(reply)")
@@ -56,7 +56,7 @@ class WatchDataReceiver: NSObject, ObservableObject {
         )
     }
     
-    private func decodeAndUpdateVehicles(_ data: Data) {
+    private func decodeAndUpdateVehicles(_ data: Data) {                // Decoding the received data and updating the vehicles list on the watch
         do {
             let decoder = JSONDecoder()
             let decodedVehicles = try decoder.decode([VehicleData].self, from: data)
@@ -74,7 +74,7 @@ class WatchDataReceiver: NSObject, ObservableObject {
     
 }
 
-extension WatchDataReceiver: WCSessionDelegate {
+extension WatchDataReceiver: WCSessionDelegate {            // Two main functions are the same as on iOS part
     func session(_ session: WCSession,
              activationDidCompleteWith activationState: WCSessionActivationState,
              error: Error?) {
@@ -95,7 +95,7 @@ extension WatchDataReceiver: WCSessionDelegate {
         }
     }
     
-    func session(_ session: WCSession,
+    func session(_ session: WCSession,                                      // Receiving messages with reply handler, used for fetching vehicles on demand from iPhone
                  didReceiveMessage message: [String : Any],
                  replyHandler: @escaping ([String : Any]) -> Void) {
         print("Received message WITH reply handler: \(message.keys)")
@@ -109,7 +109,7 @@ extension WatchDataReceiver: WCSessionDelegate {
         }
     }
     
-    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
+    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {     // Receiving messages without reply handler
         print("Received message: \(message.keys)")
         
         if let vehiclesData = message["vehicles"] as? Data {
@@ -117,7 +117,7 @@ extension WatchDataReceiver: WCSessionDelegate {
         }
     }
     
-    func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String : Any]) {
+    func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String : Any]) {           // Receiving background updates through context
         print("Received background update.")
         
         if let vehiclesData = applicationContext["vehicles"] as? Data {

@@ -10,15 +10,15 @@ import WatchConnectivity
 internal import Combine
 
 class WatchConnectivityManager: NSObject, ObservableObject {
-    static let shared = WatchConnectivityManager()
+    static let shared = WatchConnectivityManager()          // Creating a singleton instance for easy access throughout the app
     @Published var isWatchReachable = false
     
-    private override init() {
+    private override init() {           // init can't be called from outside the class, ensuring that only one instance exists
         super.init()
         setupSession()
     }
     
-    private func setupSession() {
+    private func setupSession() {               // Setting up the WCSession and activating it to start listening for messages from the watch, delegate is the class itself
         guard WCSession.isSupported() else {
             print("WatchConnectivity not supported")
             return
@@ -29,21 +29,21 @@ class WatchConnectivityManager: NSObject, ObservableObject {
     }
     
     func sendVehiclesToWatch() async {
-        guard WCSession.default.activationState == .activated else {
+        guard WCSession.default.activationState == .activated else {        // Check if the session is activated
             print("Session not activated.")
             return
         }
         
         do {
             print("Fetcham vozila...")
-            let fetcher = RealTimeFetcher()
+            let fetcher = RealTimeFetcher()                             // Fetching vehicles from ZET website
             let vehicles = try await fetcher.fetchVehicles()
             print("Fetched \(vehicles.count) vehicles.")
             
-            let encoder = JSONEncoder()
+            let encoder = JSONEncoder()                             // Encoding the vehicles data into JSON format to send to the watch
             let jsonData = try encoder.encode(vehicles)
             
-            if WCSession.default.isReachable {
+            if WCSession.default.isReachable {          // If the watch is reachable (in foreground) send the data, otherwise update the application context with background delivery
                 WCSession.default.sendMessage(
                     ["vehicles": jsonData],
                     replyHandler: { reply in
@@ -66,7 +66,7 @@ class WatchConnectivityManager: NSObject, ObservableObject {
 }
 
 extension WatchConnectivityManager: WCSessionDelegate {
-    func session(_ session: WCSession,
+    func session(_ session: WCSession,                       // Activating session with call in setupSession
                  activationDidCompleteWith activationState: WCSessionActivationState,
                  error: Error?) {
         if let error = error {
@@ -76,7 +76,7 @@ extension WatchConnectivityManager: WCSessionDelegate {
         }
     }
     
-    func sessionReachabilityDidChange(_ session: WCSession) {
+    func sessionReachabilityDidChange(_ session: WCSession) {       // If reachability changes, update the variable accordingly, DispatchQueue is used to ensure that UI updates happen on the main thread
         DispatchQueue.main.async {
             self.isWatchReachable = session.isReachable
             print("Watch reachable: \(session.isReachable)")
@@ -87,12 +87,12 @@ extension WatchConnectivityManager: WCSessionDelegate {
         print("Session inactive")
     }
     
-    func sessionDidDeactivate(_ session: WCSession) {
+    func sessionDidDeactivate(_ session: WCSession) {           // When the session is deactivated, we need to activate it again to continue receiving messages
         print("Session deactivated")
         session.activate()
     }
     
-    func session(_ session: WCSession,
+    func session(_ session: WCSession,                              // Used for receiving requests from the watch
                      didReceiveMessage message: [String : Any],
                      replyHandler: @escaping ([String : Any]) -> Void) {
                     

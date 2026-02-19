@@ -13,7 +13,7 @@ final class RealTimeFetcher {
     private let url = URL(string: "https://www.zet.hr/gtfs-rt-protobuf")!
     private let url2 = URL(string: "https://www.zet.hr/gtfs-scheduled/latest")!
     
-    func fetch() async {
+    func fetch() async {                // Debug function for GTFS feed
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             
@@ -41,9 +41,9 @@ final class RealTimeFetcher {
     
     func fetchVehicles() async throws -> [VehicleData] {
         let (data, _) = try await URLSession.shared.data(from: url)
-        let feed = try TransitRealtime_FeedMessage(serializedBytes: data)
+        let feed = try TransitRealtime_FeedMessage(serializedBytes: data)           // Parsing the GTFS feed message with helper file created from proto + SwiftProtobuf library
         
-        let tripDestinations = try await fetchGTFSStatic()
+        let tripDestinations = try await fetchGTFSStatic()              // Getting pairs of trip_id and destination
         
         var vehicles: [VehicleData] = []
         
@@ -84,7 +84,7 @@ final class RealTimeFetcher {
         return vehicles
     }
     
-    func fetchTrams() async throws -> [VehicleData] {
+    func fetchTrams() async throws -> [VehicleData] {           // Helper functions not used in code right now
         let allVehicles = try await fetchVehicles()
         return allVehicles.filter { $0.isTram }
     }
@@ -94,32 +94,32 @@ final class RealTimeFetcher {
         return allVehicles.filter { !$0.isTram }
     }
     
-    private func fetchGTFSStatic() async throws -> [String: String] {
+    private func fetchGTFSStatic() async throws -> [String: String] {       // Fetching GTFS static data from ZIP
         let (data, _) = try await URLSession.shared.data(from: url2)
         
-        var tripIdToDestination: [String: String] = [:]
+        var tripIdToDestination: [String: String] = [:]                     // I wanted to show vehicle destination under vehicle marker on the map
         
-        let archive = try Archive(data: data, accessMode: .read)
+        let archive = try Archive(data: data, accessMode: .read)            // Open ZIP archive
         
-        if let entry = archive["trips.txt"] {
+        if let entry = archive["trips.txt"] {           // Find the "trips.txt" file in the archive
             var csvData = Data()
-            _ = try archive.extract(entry, consumer: { csvData.append($0) })
+            _ = try archive.extract(entry, consumer: { csvData.append($0) })            // Storing data from trips in csvData
             
-            if let csvString = String(data: csvData, encoding: .utf8) {
-                let lines = csvString.components(separatedBy: .newlines)
-                guard let header = lines.first else { return [:] }
+            if let csvString = String(data: csvData, encoding: .utf8) {         // Bytes in String
+                let lines = csvString.components(separatedBy: .newlines)        // Separating lines
+                guard let header = lines.first else { return [:] }          // Getting header indices
                 
                 let headerColumns = parseCSVLine(header)
                 guard let tripIdIndex = headerColumns.firstIndex(of: "trip_id"),
                       let headsignIndex = headerColumns.firstIndex(of: "trip_headsign") else { return [:] }
                 
-                for line in lines.dropFirst() {
+                for line in lines.dropFirst() {                 // For every remaining line except headers
                     guard !line.isEmpty else { continue }
                     let columns = parseCSVLine(line)
                     if columns.count > max(tripIdIndex, headsignIndex) {
                         let tripId = columns[tripIdIndex]
                         let headsign = columns[headsignIndex]
-                        let parts = tripId.split(separator: "_")
+                        let parts = tripId.split(separator: "_")            // This is needed because trip_id contains different prefixes in real-time and static files
                         if parts.count == 5 {
                             let key = "\(parts[2])_\(parts[3])_\(parts[4])"
                             tripIdToDestination[key] = headsign
@@ -137,7 +137,7 @@ final class RealTimeFetcher {
         var currentField = ""
         var insideQuotes = false
         
-        for char in line {
+        for char in line {                      // Needed because splitting by comma could split wrongly if there are commas inside quoted fields
             if char == "\"" {
                 insideQuotes.toggle()
             } else if char == "," && !insideQuotes {

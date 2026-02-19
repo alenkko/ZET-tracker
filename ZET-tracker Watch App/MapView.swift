@@ -10,17 +10,17 @@ import MapKit
 import Combine
 
 struct MapView: View {
-    @StateObject private var dataReceiver = WatchDataReceiver.shared
+    @StateObject private var dataReceiver = WatchDataReceiver.shared            // Shared data receiver
     @StateObject private var locationManager = LocationManager()
     
-    @State private var position: MapCameraPosition = .region(
+    @State private var position: MapCameraPosition = .region(                   // Default position when no user location is available
         MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: 45.8150, longitude: 15.9819),
             span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
         )
     )
         
-    @State private var currentMapCenter: CLLocationCoordinate2D = CLLocationCoordinate2D(
+    @State private var currentMapCenter: CLLocationCoordinate2D = CLLocationCoordinate2D(       // Used for calcuating visible vehicles
             latitude: 45.8150,
             longitude: 15.9819
         )
@@ -35,7 +35,7 @@ struct MapView: View {
     
     private let visibleRadius: CLLocationDistance = 1000
         
-    private var visibleVehicles: [VehicleData] {
+    private var visibleVehicles: [VehicleData] {   // Filtering vehicles based on the current map position and the selected filters
         let mapCenterLocation = CLLocation(
             latitude: currentMapCenter.latitude,
             longitude: currentMapCenter.longitude
@@ -54,7 +54,7 @@ struct MapView: View {
         }
     }
     
-    private func timeAgo(from date: Date) -> String {
+    private func timeAgo(from date: Date) -> String {           // Formatting the last update time
         let seconds = Int(Date().timeIntervalSince(date))
         if seconds < 60 {
             return "\(seconds)s"
@@ -68,7 +68,7 @@ struct MapView: View {
     var body: some View {
         ZStack {
             Map(position: $position) {
-                if let userLocation = locationManager.userLocation {
+                if let userLocation = locationManager.userLocation {            // Marker for user location
                     Annotation("", coordinate: userLocation) {
                         ZStack {
                             Circle()
@@ -90,11 +90,11 @@ struct MapView: View {
                     }
                 }
             }
-            .onMapCameraChange(frequency: .continuous) { context in
+            .onMapCameraChange(frequency: .continuous) { context in                     // Changing map center and span values when the user moves the map
                 currentMapCenter = context.region.center
                 currentMapSpan = context.region.span
             }
-            .overlay(alignment: .bottomTrailing) {
+            .overlay(alignment: .bottomTrailing) {          // Filter menu for showing buses and trams
                 VStack() {
                     if showFilterMenu {
                         VStack() {
@@ -141,7 +141,7 @@ struct MapView: View {
                 .padding(.bottom, 20)
                 .padding(.trailing, 20)
             }
-            .overlay(alignment: .top) {
+            .overlay(alignment: .top) {                  // Showing last update time if available
                 if let lastUpdate = dataReceiver.lastUpdateTime {
                     TimelineView(.periodic(from: lastUpdate, by: 1.0)) { context in
                         HStack(spacing: 4) {
@@ -160,7 +160,7 @@ struct MapView: View {
                     }
                 }
             }
-            .overlay(alignment: .bottom) {
+            .overlay(alignment: .bottom) {              // Button for refreshing the vehicles data
                 Button {
                     dataReceiver.requestVehiclesFromPhone()
                 } label: {
@@ -173,7 +173,7 @@ struct MapView: View {
                 .glassEffect()
                 .padding(.bottom, 20)
             }
-            .overlay(alignment: .bottomLeading) {
+            .overlay(alignment: .bottomLeading) {               // Button for centering the map on user location
                 Button(action: {
                     position = .userLocation(fallback: .automatic)
                 }) {
@@ -192,7 +192,7 @@ struct MapView: View {
                 MapCompass()
             }
         }
-        .onAppear {
+        .onAppear {                         // When the view appears, user must give the permission for location access
             locationManager.requestPermission()
             locationManager.startUpdating()
             
@@ -215,7 +215,7 @@ struct MapView: View {
 }
 
 
-struct VehicleMarker: View {
+struct VehicleMarker: View {                // View for showing vehicle markers
     let vehicle: VehicleData
     var body: some View {
         ZStack {
@@ -232,7 +232,7 @@ struct VehicleMarker: View {
 }
 
 
-class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {          // Class for managing user location and permissions
     private let manager = CLLocationManager()
     
     @Published var userLocation: CLLocationCoordinate2D?
@@ -245,11 +245,11 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         manager.distanceFilter = 50
     }
     
-    func requestPermission() {
+    func requestPermission() {          // Requsting permission for location access
         manager.requestWhenInUseAuthorization()
     }
     
-    func startUpdating() {
+    func startUpdating() {                                  // Updating the location
         if authorizationStatus == .authorizedWhenInUse ||
            authorizationStatus == .authorizedAlways {
             manager.startUpdatingLocation()
@@ -260,7 +260,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         manager.stopUpdatingLocation()
     }
     
-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {      // When authorization status changes, checking if we have the permission to update the location
         authorizationStatus = manager.authorizationStatus
             
         switch authorizationStatus {
@@ -273,7 +273,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {  // New location available
         guard let location = locations.last else { return }
         
         DispatchQueue.main.async {

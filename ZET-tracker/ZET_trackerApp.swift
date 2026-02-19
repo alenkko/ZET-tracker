@@ -9,7 +9,7 @@ import SwiftUI
 
 @main
 struct ZET_trackerApp: App {
-    init() {
+    init() {                                  // Initialize the WatchConnectivityManager to start listening for messages from the watch
         _ = WatchConnectivityManager.shared
     }
     var body: some Scene {
